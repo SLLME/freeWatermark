@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>free-watermark · 在线演示</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        background: #f5f6f8;
+        color: #1f2329;
+      }
+      header {
+        padding: 18px 24px;
+        background: #fff;
+        border-bottom: 1px solid #e5e6eb;
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+      }
+      header h1 { margin: 0; font-size: 18px; }
+      header span { font-size: 13px; color: #86909c; }
+      .layout {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 20px;
+        padding: 20px;
+        align-items: start;
+      }
+      .panel {
+        background: #fff;
+        border: 1px solid #e5e6eb;
+        border-radius: 10px;
+        padding: 16px;
+      }
+      .panel h2 { margin: 0 0 14px; font-size: 14px; color: #4e5969; font-weight: 600; }
+      .field { margin-bottom: 12px; }
+      .field label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: #4e5969;
+        margin-bottom: 5px;
+      }
+      .field label b { color: #165dff; font-weight: 600; }
+      input[type="text"], select {
+        width: 100%;
+        height: 32px;
+        padding: 0 10px;
+        border: 1px solid #d9d9d9;
+        border-radius: 6px;
+        font-size: 13px;
+        outline: none;
+      }
+      input[type="text"]:focus, select:focus { border-color: #165dff; }
+      input[type="range"] { width: 100%; }
+      input[type="color"] { width: 100%; height: 32px; padding: 2px; border: 1px solid #d9d9d9; border-radius: 6px; background: #fff; }
+      .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+      .btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      button {
+        height: 32px;
+        padding: 0 12px;
+        border-radius: 6px;
+        border: 1px solid #d9d9d9;
+        background: #fff;
+        font-size: 13px;
+        cursor: pointer;
+        color: #1f2329;
+      }
+      button:hover { border-color: #165dff; color: #165dff; }
+      button.primary { background: #165dff; border-color: #165dff; color: #fff; }
+      button.primary:hover { background: #4080ff; color: #fff; }
+      button.danger:hover { border-color: #f53f3f; color: #f53f3f; }
+      .stage { position: relative; min-height: 560px; overflow: hidden; }
+      .stage h2 { margin: 0 0 6px; font-size: 20px; }
+      .stage .meta { font-size: 12px; color: #86909c; margin-bottom: 18px; }
+      .stage p { line-height: 1.9; color: #4e5969; font-size: 14px; margin: 0 0 14px; }
+      .stage table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 8px 0 18px; }
+      .stage th, .stage td { border: 1px solid #e5e6eb; padding: 8px 10px; text-align: left; }
+      .stage th { background: #f7f8fa; color: #4e5969; font-weight: 600; }
+      .tip {
+        font-size: 12px;
+        color: #86909c;
+        line-height: 1.7;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px dashed #e5e6eb;
+      }
+      .tip code {
+        background: #f2f3f5;
+        padding: 1px 5px;
+        border-radius: 4px;
+        font-size: 12px;
+      }
+      .log {
+        margin-top: 10px;
+        font-size: 12px;
+        color: #00b42a;
+        min-height: 18px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>free-watermark</h1>
+      <span>页面水印库 · 实时演示（当前页面水印由本库渲染）</span>
+    </header>
+
+    <div class="layout">
+      <div class="panel">
+        <h2>水印配置</h2>
+
+        <div class="field">
+          <label>水印文字</label>
+          <input id="content" type="text" value="内部资料 禁止外传" />
+        </div>
+
+        <div class="field">
+          <label>排版模式</label>
+          <select id="mode">
+            <option value="tile">tile · 平铺</option>
+            <option value="center">center · 居中单个</option>
+          </select>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label>字号 <b id="fontSizeVal">16</b></label>
+            <input id="fontSize" type="range" min="10" max="48" value="16" />
+          </div>
+          <div class="field">
+            <label>旋转 <b id="rotateVal">-22</b></label>
+            <input id="rotate" type="range" min="-90" max="90" value="-22" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label>透明度 <b id="opacityVal">0.15</b></label>
+            <input id="opacity" type="range" min="0.02" max="1" step="0.01" value="0.15" />
+          </div>
+          <div class="field">
+            <label>颜色</label>
+            <input id="color" type="color" value="#000000" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label>横向间距 <b id="gapXVal">100</b></label>
+            <input id="gapX" type="range" min="0" max="400" value="100" />
+          </div>
+          <div class="field">
+            <label>纵向间距 <b id="gapYVal">100</b></label>
+            <input id="gapY" type="range" min="0" max="400" value="100" />
+          </div>
+        </div>
+
+        <div class="btns">
+          <button class="primary" id="apply">应用配置</button>
+          <button id="toggle">隐藏水印</button>
+          <button id="image">切换图片水印</button>
+          <button class="danger" id="destroy">销毁</button>
+          <button class="primary" id="recreate">重建</button>
+        </div>
+
+        <div class="btns">
+          <button class="danger" id="tamper">模拟删除水印节点</button>
+        </div>
+        <div class="log" id="log"></div>
+
+        <div class="tip">
+          用 F12 在 Elements 面板里删掉带 <code>data-free-watermark</code> 的元素，或改写它的样式，水印会自动恢复——这就是 MutationObserver 的作用。
+        </div>
+      </div>
+
+      <div class="panel stage" id="stage">
+        <h2>2026 年度内部经营分析报告</h2>
+        <div class="meta">文档编号：CN-2026-Q3-0912 &nbsp;|&nbsp; 密级：内部 &nbsp;|&nbsp; 编制：战略与运营中心</div>
+        <p>
+          本报告基于集团 2026 年前三季度经营数据汇总编制，涵盖收入结构、成本费用、现金流与重点业务进展。报告仅供内部管理决策使用，
+          任何未经授权的复制、转发、截图与外传均属违规行为。请在阅读时注意数据口径与统计周期的一致性。
+        </p>
+        <table>
+          <thead>
+            <tr><th>业务板块</th><th>营业收入（万元）</th><th>同比</th><th>毛利率</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>云计算与基础设施</td><td>128,640</td><td>+18.4%</td><td>41.2%</td></tr>
+            <tr><td>企业软件服务</td><td>86,320</td><td>+12.1%</td><td>58.7%</td></tr>
+            <tr><td>行业解决方案</td><td>64,180</td><td>-3.6%</td><td>33.5%</td></tr>
+            <tr><td>海外业务</td><td>41,905</td><td>+27.9%</td><td>36.8%</td></tr>
+          </tbody>
+        </table>
+        <p>
+          第四季度重点推进三件事：一是完成数据中台二期交付；二是把海外渠道的结算周期从 60 天压缩到 45 天；
+          三是对毛利率低于 35% 的三条产品线启动成本重估。相关责任人已在经营例会上一一确认，纳入季度考核。
+        </p>
+      </div>
+    </div>
+
+    <script src="../dist/watermark.global.js"></script>
+    <script>
+      var FW = window.FreeWatermark
+      var stage = document.getElementById('stage')
+      var logEl = document.getElementById('log')
+      var instance = null
+      var useImage = false
+
+      // 一张内联 SVG 图片，避免演示时依赖网络
+      var LOGO =
+        'data:image/svg+xml;charset=utf-8,' +
+        encodeURIComponent(
+          '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="40">' +
+            '<rect x="1" y="1" width="118" height="38" rx="8" fill="none" stroke="#165dff" stroke-width="2"/>' +
+            '<text x="60" y="26" font-family="sans-serif" font-size="17" font-weight="700" fill="#165dff" text-anchor="middle">CONFIDENTIAL</text>' +
+            '</svg>',
+        )
+
+      function val(id) { return document.getElementById(id).value }
+      function num(id) { return Number(document.getElementById(id).value) }
+
+      function currentOptions() {
+        var base = {
+          container: stage,
+          fontSize: num('fontSize'),
+          rotate: num('rotate'),
+          opacity: num('opacity'),
+          color: val('color'),
+          gap: [num('gapX'), num('gapY')],
+          mode: val('mode'),
+        }
+        if (useImage) {
+          base.image = LOGO
+          base.width = 120
+        } else {
+          base.content = val('content')
+        }
+        return base
+      }
+
+      function syncLabels() {
+        document.getElementById('fontSizeVal').textContent = val('fontSize')
+        document.getElementById('rotateVal').textContent = val('rotate')
+        document.getElementById('opacityVal').textContent = val('opacity')
+        document.getElementById('gapXVal').textContent = val('gapX')
+        document.getElementById('gapYVal').textContent = val('gapY')
+      }
+
+      function say(msg) { logEl.textContent = msg }
+
+      function create() {
+        instance = FW.createWatermark(currentOptions())
+        instance.ready.then(function () {
+          if (instance.error) say('渲染失败：' + instance.error.message)
+          else say('已渲染，贴图 ' + instance.getOptions().mode + ' / dataURL 长度 ' + instance.getDataURL().length)
+        })
+        document.getElementById('toggle').textContent = '隐藏水印'
+      }
+
+      // 初始化
+      create()
+
+      document.querySelectorAll('input[type="range"]').forEach(function (input) {
+        input.addEventListener('input', function () {
+          syncLabels()
+          instance.update(currentOptions())
+        })
+      })
+
+      document.getElementById('content').addEventListener('input', function () {
+        useImage = false
+        instance.update(currentOptions())
+      })
+      document.getElementById('mode').addEventListener('change', function () {
+        instance.update(currentOptions())
+      })
+      document.getElementById('color').addEventListener('input', function () {
+        instance.update(currentOptions())
+      })
+
+      document.getElementById('apply').addEventListener('click', function () {
+        instance.update(currentOptions())
+        say('配置已应用')
+      })
+
+      document.getElementById('toggle').addEventListener('click', function () {
+        if (instance.isVisible()) {
+          instance.hide()
+          this.textContent = '显示水印'
+          say('水印已隐藏')
+        } else {
+          instance.show()
+          this.textContent = '隐藏水印'
+          say('水印已显示')
+        }
+      })
+
+      document.getElementById('image').addEventListener('click', function () {
+        useImage = !useImage
+        instance.update(currentOptions())
+        say(useImage ? '已切换为图片水印' : '已切换为文字水印')
+      })
+
+      document.getElementById('destroy').addEventListener('click', function () {
+        instance.destroy()
+        say('水印已销毁（监听已解除，再删节点也不会恢复）')
+      })
+
+      document.getElementById('recreate').addEventListener('click', function () {
+        if (instance && !instance.destroyed) instance.destroy()
+        create()
+        say('水印已重建')
+      })
+
+      function tamper() {
+        var removed = 0
+        var changed = 0
+        document.querySelectorAll('[data-free-watermark]').forEach(function (el) {
+          // 顺手把 shadow 内部的图层也破坏掉，模拟知道原理的攻击者
+          var root = el.shadowRoot || el
+          root.querySelectorAll('[data-free-watermark-layer]').forEach(function (layer) {
+            layer.style.backgroundImage = 'none'
+            layer.style.display = 'none'
+            changed += 1
+          })
+          el.style.cssText = 'display:none !important'
+          el.remove()
+          removed += 1
+        })
+        say('已删除 ' + removed + ' 个水印节点、破坏 ' + changed + ' 个图层，观察是否自动恢复…')
+        setTimeout(function () {
+          var alive = document.querySelectorAll('[data-free-watermark]').length
+          var layerOk = 0
+          document.querySelectorAll('[data-free-watermark]').forEach(function (el) {
+            var root = el.shadowRoot || el
+            root.querySelectorAll('[data-free-watermark-layer]').forEach(function (layer) {
+              if (layer.style.backgroundImage !== 'none' && layer.style.display !== 'none') layerOk += 1
+            })
+          })
+          var ok = alive > 0 && layerOk > 0
+          say(ok ? '水印已自动恢复（节点 ' + alive + ' 个，图层 ' + layerOk + ' 个）' : '水印未能恢复')
+          document.title = ok ? 'TAMPER_RESULT:RECOVERED' : 'TAMPER_RESULT:FAILED'
+        }, 400)
+      }
+
+      document.getElementById('tamper').addEventListener('click', tamper)
+
+      // 支持 ?tamper=1 自动执行防删测试，便于自动化验证
+      if (location.search.indexOf('tamper=1') > -1) {
+        setTimeout(tamper, 600)
+      }
+    </script>
+  </body>
+</html>

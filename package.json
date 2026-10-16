@@ -1,0 +1,84 @@
+{
+  "name": "free-watermark",
+  "version": "0.1.0",
+  "description": "轻量、零运行时依赖的页面水印库：文字/图片水印、Canvas 平铺、Shadow DOM 样式隔离、MutationObserver 防删除重绘，附带 Vue 3 指令与组件。",
+  "keywords": [
+    "watermark",
+    "水印",
+    "watermark-dom",
+    "canvas-watermark",
+    "shadow-dom",
+    "anti-tamper",
+    "vue",
+    "vue3",
+    "typescript"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "unpkg": "./dist/watermark.global.js",
+  "jsdelivr": "./dist/watermark.global.js",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./vue": {
+      "import": {
+        "types": "./dist/vue/index.d.ts",
+        "default": "./dist/vue/index.js"
+      },
+      "require": {
+        "types": "./dist/vue/index.d.cts",
+        "default": "./dist/vue/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "node scripts/smoke.mjs",
+    "verify:published": "node scripts/verify-published.mjs",
+    "build:demo": "node scripts/build-demo.mjs",
+    "demo": "node scripts/serve.mjs",
+    "release:dry": "npm publish --registry=https://registry.npmjs.org --access public --dry-run",
+    "release": "npm publish --registry=https://registry.npmjs.org --access public",
+    "prepublishOnly": "npm run typecheck && npm run build && npm test"
+  },
+  "peerDependencies": {
+    "vue": "^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@rollup/rollup-win32-x64-msvc": "^4.64.7",
+    "tsup": "^8.3.5",
+    "typescript": "^5.6.3",
+    "vue": "^3.5.13"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

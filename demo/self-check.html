@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>free-watermark · 自检页</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        padding: 20px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        background: #eef0f3;
+        color: #1f2329;
+      }
+      h1 { font-size: 17px; margin: 0 0 16px; }
+      .box {
+        width: 600px;
+        max-width: 100%;
+        padding: 20px;
+        border: 1px solid #d9d9d9;
+        background: #fff;
+        border-radius: 10px;
+        margin-bottom: 20px;
+      }
+      .box p { margin: 0; font-size: 14px; color: #4e5969; line-height: 1.8; }
+      .result {
+        background: #fff;
+        border: 1px solid #d9d9d9;
+        border-radius: 10px;
+        padding: 16px 20px;
+      }
+      .result h2 { font-size: 14px; margin: 0 0 10px; }
+      .result pre {
+        margin: 0;
+        white-space: pre-wrap;
+        font-family: Consolas, Monaco, monospace;
+        font-size: 12px;
+        line-height: 1.8;
+        color: #4e5969;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>free-watermark 自检页</h1>
+
+    <div class="box" id="a"><p>容器 A：静态定位，库会自动补上 position: relative。平铺模式。</p></div>
+    <div class="box" id="b"><p>容器 B：已有 position: relative。居中单个模式。</p></div>
+    <div class="box" id="c"><p>容器 C：用于验证 update 切换容器后，旧容器的定位改动被还原。</p></div>
+
+    <div class="result">
+      <h2>自检结果</h2>
+      <pre id="out">运行中…</pre>
+    </div>
+
+    <script>
+      // 把页面里的异常直接显示出来，方便定位
+      function reportError(label, detail) {
+        var out = document.getElementById('out')
+        if (out) out.textContent = '[' + label + ']\n' + detail
+        document.title = 'SELFCHECK:ERROR'
+      }
+      window.addEventListener('error', function (e) {
+        reportError('error', e.message + '\n' + (e.filename || '') + ':' + (e.lineno || ''))
+      })
+      window.addEventListener('unhandledrejection', function (e) {
+        var r = e.reason
+        reportError('unhandledrejection', (r && (r.stack || r.message)) || String(r))
+      })
+    </script>
+
+    <script src="../dist/watermark.global.js"></script>
+    <script>
+      var FW = window.FreeWatermark
+      var w1 = FW.createWatermark({ container: '#a', content: '测试水印' })
+      var w2 = FW.createWatermark({ container: '#b', content: '测试水印', mode: 'center' })
+
+      function rect(el) {
+        var r = el.getBoundingClientRect()
+        return r.width.toFixed(0) + 'x' + r.height.toFixed(0) + ' @(' + r.x.toFixed(0) + ',' + r.y.toFixed(0) + ')'
+      }
+
+      Promise.all([w1.ready, w2.ready]).then(function () {
+        var lines = []
+        var pass = 0
+        var total = 0
+
+        function check(name, ok, detail) {
+          total++
+          if (ok) pass++
+          lines.push((ok ? '[ok]  ' : '[!!]  ') + name + (detail ? '  -> ' + detail : ''))
+        }
+
+        ;[
+          ['a', w1],
+          ['b', w2],
+        ].forEach(function (pair) {
+          var id = pair[0]
+          var tag = id.toUpperCase()
+          var w = pair[1]
+          var box = document.getElementById(id)
+          var host = box.querySelector('[data-free-watermark]')
+          var layer = host.shadowRoot.querySelector('[data-free-watermark-layer]')
+
+          check(tag + ' 水印节点已插入容器', box.contains(host))
+          check(
+            tag + ' 宿主铺满容器内容区',
+            Math.abs(host.getBoundingClientRect().width - box.clientWidth) <= 1 &&
+              Math.abs(host.getBoundingClientRect().height - box.clientHeight) <= 1,
+            'host ' + rect(host) + ' / 内容区 ' + box.clientWidth + 'x' + box.clientHeight,
+          )
+          check(tag + ' 图层铺满宿主', rect(layer) === rect(host), rect(layer))
+          check(tag + ' 容器为定位元素', getComputedStyle(box).position !== 'static', getComputedStyle(box).position)
+          check(tag + ' 图层不拦截鼠标事件', getComputedStyle(layer).pointerEvents === 'none')
+          check(tag + ' 已生成 PNG 贴图', w.getDataURL().indexOf('data:image/png') === 0, 'dataURL ' + w.getDataURL().length + ' 字符')
+          check(
+            tag + ' 背景贴图已应用',
+            layer.style.backgroundImage.indexOf('data:image/png') > -1,
+            layer.style.backgroundSize + ' / ' + layer.style.backgroundRepeat,
+          )
+          check(tag + ' 渲染无错误', w.error === null, w.error ? w.error.message : '')
+        })
+
+        lines.push('')
+        lines.push('—— update 切换容器 ——')
+
+        var boxA = document.getElementById('a')
+        var boxC = document.getElementById('c')
+        check('切换前容器 A 被临时改为定位元素', getComputedStyle(boxA).position === 'relative', getComputedStyle(boxA).position)
+
+        w1.update({ container: boxC })
+        check(
+          '宿主已迁移到新容器',
+          boxC.querySelector('[data-free-watermark]') !== null && boxA.querySelector('[data-free-watermark]') === null,
+        )
+        check('旧容器的定位改动已还原', getComputedStyle(boxA).position === 'static', 'A=' + getComputedStyle(boxA).position)
+        check('新容器已补上定位', getComputedStyle(boxC).position === 'relative', 'C=' + getComputedStyle(boxC).position)
+
+        w1.update({ container: boxA })
+        check('迁回后旧容器同样被还原', getComputedStyle(boxC).position === 'static', 'C=' + getComputedStyle(boxC).position)
+
+        lines.push('')
+        lines.push('—— 防删除 / 防篡改 ——')
+
+        var hosts = document.querySelectorAll('[data-free-watermark]')
+        hosts.forEach(function (el) {
+          var root = el.shadowRoot || el
+          var layer = root.querySelector('[data-free-watermark-layer]')
+          if (layer) {
+            layer.style.backgroundImage = 'none'
+            layer.style.display = 'none'
+          }
+          el.style.cssText = 'display:none !important'
+          el.remove()
+        })
+        lines.push('已删除 ' + hosts.length + ' 个水印节点、抹掉图层背景并强制 display:none')
+
+        setTimeout(function () {
+          var alive = document.querySelectorAll('[data-free-watermark]').length
+          var restored = 0
+          document.querySelectorAll('[data-free-watermark]').forEach(function (el) {
+            var root = el.shadowRoot || el
+            var layer = root.querySelector('[data-free-watermark-layer]')
+            var ok = layer && layer.style.backgroundImage !== 'none' && layer.style.display !== 'none'
+            if (ok && getComputedStyle(el).display !== 'none') restored++
+          })
+          check('水印节点自动重新插入', alive === hosts.length, '恢复 ' + alive + '/' + hosts.length)
+          check('图层样式与宿主显示被还原', restored === hosts.length, '还原 ' + restored + '/' + hosts.length)
+
+          lines.push('')
+          lines.push(
+            '结论：' + (pass === total ? '全部通过' : '有 ' + (total - pass) + ' 项未通过') + '（' + pass + '/' + total + '）',
+          )
+
+          document.getElementById('out').textContent = lines.join('\n')
+          document.title = pass === total ? 'SELFCHECK:PASS' : 'SELFCHECK:FAIL'
+        }, 400)
+      })
+    </script>
+  </body>
+</html>

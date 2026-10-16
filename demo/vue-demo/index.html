@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>free-watermark · Vue 3 演示</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        background: #f5f6f8;
+        color: #1f2329;
+      }
+      .page { padding: 20px; max-width: 1000px; margin: 0 auto; }
+      header {
+        background: #fff;
+        border: 1px solid #e5e6eb;
+        border-radius: 10px;
+        padding: 18px 24px;
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      header h1 { margin: 0; font-size: 18px; }
+      header span { font-size: 13px; color: #86909c; }
+      .controls {
+        background: #fff;
+        border: 1px solid #e5e6eb;
+        border-radius: 10px;
+        padding: 16px 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+        font-size: 13px;
+        color: #4e5969;
+      }
+      .controls input {
+        flex: 1;
+        height: 32px;
+        padding: 0 10px;
+        border: 1px solid #d9d9d9;
+        border-radius: 6px;
+        font-size: 13px;
+        outline: none;
+      }
+      .controls input:focus { border-color: #165dff; }
+      .controls button {
+        height: 32px;
+        padding: 0 14px;
+        border: 1px solid #165dff;
+        background: #165dff;
+        color: #fff;
+        border-radius: 6px;
+        font-size: 13px;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      section,
+      .wm-card {
+        background: #fff;
+        border: 1px solid #e5e6eb;
+        border-radius: 10px;
+        padding: 20px 24px;
+        margin-bottom: 16px;
+      }
+      section h2,
+      .wm-card h2 { margin: 0 0 10px; font-size: 16px; }
+      section p,
+      .wm-card p { margin: 0 0 8px; font-size: 14px; line-height: 1.8; color: #4e5969; }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="./bundle.js"></script>
+  </body>
+</html>

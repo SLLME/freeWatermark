@@ -1,0 +1,12 @@
+node_modules/
+dist/
+*.log
+.DS_Store
+.idea/
+.vscode/
+*.tsbuildinfo
+# 防止误提交本地认证信息
+.npmrc
+*.tgz
+# 本地 agent 工作数据，不入库
+.workbuddy-ai/
